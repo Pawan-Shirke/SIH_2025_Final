@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arogya - Staff Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="light">
+
+<div class="container">
+    <header>
+        <div class="logo-container fade-in">
+            <!-- Replaced inline SVG with image logo -->
+            <img src="./arogya_logo.jpg" alt="Arogya Logo" class="main-logo" />
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="patient.html">Patient</a>
+            <a href="doctor.html">Doctor</a>
+            <a href="staff.html" class="active">Staff</a>
+            <!-- Removed Dark Mode Toggle -->
+        </nav>
+    </header>
+
+    <main>
+        <div class="grid-2-col">
+            <section class="card slide-in">
+                <h2><i class="fas fa-user-plus"></i> Register New Patient</h2>
+                <form id="register-patient-form">
+                    <label>Full Name <input type="text" placeholder="Patient's Full Name" required></label>
+                    <label>Contact Email <input type="email" placeholder="patient@example.com" required></label>
+                    <label>Date of Birth <input type="date" required></label>
+                    <button type="submit" class="btn btn-primary">Register Patient</button>
+                </form>
+            </section>
+            
+            <section class="card slide-in">
+                <h2><i class="fas fa-calendar-alt"></i> Create Appointment</h2>
+                <form id="create-appointment-form">
+                    <label>Date <input type="date" required></label>
+                    <label>Time <input type="time" required></label>
+                    <label>Patient Name <input type="text" placeholder="Patient Name" required></label>
+                    <label>Doctor Name <input type="text" placeholder="Doctor Name" required></label>
+                    <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                </form>
+            </section>
+        </div>
+
+        <section class="card slide-in">
+            <h2><i class="fas fa-list-ul"></i> All Scheduled Appointments</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // --- MOCK DATA ---
+    let MOCK_STAFF_APPOINTMENTS = [
+        { date: "2024-10-10", time: "10:00 AM", patient: "Rajesh Kumar", doctor: "Dr. A. Sharma" },
+        { date: "2024-10-10", time: "11:30 AM", patient: "Priya Singh", doctor: "Dr. P. Khan" },
+    ];
+    
+    const elements = {
+        appointmentsTableBody: document.getElementById('appointments-table-body'),
+        createForm: document.getElementById('create-appointment-form'),
+        registerForm: document.getElementById('register-patient-form'),
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderAppointments(MOCK_STAFF_APPOINTMENTS);
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        elements.createForm.addEventListener('submit', handleCreateAppointment);
+        elements.registerForm.addEventListener('submit', handleRegisterPatient);
+        elements.appointmentsTableBody.addEventListener('click', handleDeleteAppointment);
+    }
+    
+    function handleRegisterPatient(e) {
+        e.preventDefault();
+        const name = e.target.elements[0].value;
+        alert(`New patient registered: ${name}. (Mock ID: AR-999)`);
+        e.target.reset();
+    }
+
+    function handleCreateAppointment(e) {
+        e.preventDefault();
+        const form = e.target;
+        const newApp = { 
+            date: form.elements[0].value, 
+            time: form.elements[1].value, 
+            patient: form.elements[2].value, 
+            doctor: form.elements[3].value 
+        };
+
+        MOCK_STAFF_APPOINTMENTS.push(newApp);
+        alert(`Appointment successfully created for ${newApp.patient}.`);
+        renderAppointments(MOCK_STAFF_APPOINTMENTS);
+        form.reset();
+    }
+    
+    function handleDeleteAppointment(event) {
+        if (!event.target.classList.contains('delete-btn')) return;
+
+        const row = event.target.closest('tr');
+        const patientName = row.cells[2].textContent;
+        const time = row.cells[1].textContent;
+        
+        MOCK_STAFF_APPOINTMENTS = MOCK_STAFF_APPOINTMENTS.filter(app => 
+            !(app.patient === patientName && app.time === time)
+        );
+
+        alert(`Appointment for ${patientName} deleted.`);
+        renderAppointments(MOCK_STAFF_APPOINTMENTS);
+    }
+
+    function renderAppointments(appointments) {
+        elements.appointmentsTableBody.innerHTML = ''; 
+
+        if (appointments.length === 0) {
+            elements.appointmentsTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No appointments found.</td></tr>`;
+            return;
+        }
+
+        appointments.forEach(app => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td data-label="Date">${app.date}</td>
+                <td data-label="Time">${app.time}</td>
+                <td data-label="Patient">${app.patient}</td>
+                <td data-label="Doctor">${app.doctor}</td>
+                <td data-label="Actions">
+                    <button class="small-btn delete-btn">Delete</button>
+                </td>
+            `;
+            elements.appointmentsTableBody.appendChild(row);
+        });
+    }
+</script>
+</body>
+</html>

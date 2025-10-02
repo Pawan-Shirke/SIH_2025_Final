@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arogya - Patient</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="light">
+
+<div class="container">
+    <header>
+        <div class="logo-container fade-in">
+            <img src="arogya_logo.jpg" alt="Arogya Portal Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="patient.html" class="active">Patient</a>
+            <a href="doctor.html">Doctor</a>
+            <a href="staff.html">Staff</a>
+        </nav>
+    </header>
+
+    <main>
+        <div id="status-message-container" style="display: none;">
+            <div id="status-message" class="card"></div>
+        </div>
+        
+        <section class="card slide-in" id="patient-auth">
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="register">Register</button>
+                <button class="tab-btn" data-tab="login">Login</button>
+            </div>
+
+            <div id="register" class="tab-content active">
+                <h2>Patient Registration</h2>
+                <form id="register-form">
+                    <label>Full Name
+                        <input type="text" id="reg-name" placeholder="Ram Kumar" required>
+                    </label>
+                    <label>Email
+                        <input type="email" id="reg-email" placeholder="ram@example.com" required>
+                    </label>
+                    <label>Password
+                        <input type="password" id="reg-password" placeholder="••••••••" required>
+                    </label>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+            
+            <div id="login" class="tab-content" style="display: none;">
+                <h2>Patient Login</h2>
+                <form id="login-form">
+                    <label>Email
+                        <input type="email" id="log-email" placeholder="ram@gmail.com" required>
+                    </label>
+                    <label>Password
+                        <input type="password" id="log-password" placeholder="••••••••" required>
+                    </label>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="card slide-in" id="patient-dashboard" style="display: none;">
+            <h2 id="welcome-message">Welcome, Patient!</h2>
+            <h3>Your Health History</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Diagnosis</th>
+                        <th>System Code</th> 
+                        <th>NAMASTE Code</th> 
+                        <th>Definition</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                </tbody>
+            </table>
+            <p id="no-history-message" class="muted" style="display: none;">No health records found.</p>
+        </section>
+
+        <section class="card slide-in" id="patient-appointments" style="display: none;">
+            <h2>Your Appointments</h2>
+            <p class="muted">You have no pending appointments.</p>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const statusContainer = document.getElementById('status-message-container');
+        const statusMessage = document.getElementById('status-message');
+        const authSection = document.getElementById('patient-auth');
+        const dashboardSection = document.getElementById('patient-dashboard');
+        const historyTableBody = document.getElementById('history-table-body');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const noHistoryMessage = document.getElementById('no-history-message');
+
+        // --- Tab Logic ---
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+                
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).style.display = 'block';
+            });
+        });
+
+        // --- Helper function to display messages ---
+        const showStatusMessage = (message, isError = false) => {
+            statusMessage.textContent = message;
+            statusMessage.className = 'card'; // Reset to base class
+            if (isError) {
+                statusMessage.classList.add('error-message');
+            } else {
+                statusMessage.classList.add('success-message');
+            }
+            statusContainer.style.display = 'flex';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                statusContainer.style.display = 'none';
+            }, 5000);
+        };
+        
+        // --- Form Submission Handlers ---
+        
+        // 1. Registration Handler
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const response = await fetch('/api/patient-register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatusMessage('✅ Patient Registered Successfully! Please log in.', false);
+                    document.querySelector('.tab-btn[data-tab="login"]').click(); // Switch to login tab
+                    document.getElementById('log-email').value = email; // Pre-fill email
+                    document.getElementById('register-form').reset(); // Clear registration form
+                } else {
+                    showStatusMessage(result.message || 'Registration failed.', true);
+                }
+            } catch (error) {
+                showStatusMessage('An error occurred during registration. Please try again.', true);
+            }
+        });
+
+        // 2. Login Handler
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('log-email').value;
+            const password = document.getElementById('log-password').value;
+
+            try {
+                const response = await fetch('/api/patient-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const patient = await response.json();
+                
+                if (response.ok) {
+                    // Successful login: Hide auth, show dashboard
+                    authSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
+                    welcomeMessage.textContent = `Welcome, ${patient.name}!`;
+
+                    // Populate history
+                    if (patient.record && patient.record.length > 0) {
+                        historyTableBody.innerHTML = '';
+                        patient.record.forEach(record => {
+                            const row = document.createElement('tr');
+                            
+                            // MODIFICATION: Populate five columns now
+                            row.innerHTML = `
+                                <td>${record.date}</td>
+                                <td>${record.diagnosis}</td>
+                                <td>${record.code}</td> <td>${record.NAMASTE_CODE || 'N/A'}</td> <td>${record.shortDefinition}</td>
+                            `;
+                            historyTableBody.appendChild(row);
+                        });
+                        noHistoryMessage.style.display = 'none';
+                    } else {
+                        historyTableBody.innerHTML = '';
+                        noHistoryMessage.style.display = 'block';
+                    }
+                    showStatusMessage('Welcome back! Login successful.', false);
+
+                } else {
+                    showStatusMessage(patient.message || 'Login failed. Check your email and password.', true);
+                }
+            } catch (error) {
+                showStatusMessage('An error occurred during login. Please try again.', true);
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

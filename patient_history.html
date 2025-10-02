@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arogya - Patient History</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    /* ✅ Updated logo size and responsiveness */
+    .logo-container .main-logo-img {
+      height: 65px;  /* larger for desktop */
+      width: auto;
+      margin-right: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .logo-container .main-logo-img {
+        height: 50px;  /* moderate on tablets */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo-container .main-logo-img {
+        height: 40px;  /* smaller on mobile */
+      }
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2563eb;
+      display: flex;
+      align-items: center; /* vertical centering with logo */
+    }
+
+    nav .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+
+    nav .nav-btn:hover {
+      background: #1e40af;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    /* --- Table Styling --- */
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    .table-scroll table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .table-scroll th,
+    .table-scroll td {
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+
+    .table-scroll th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .table-scroll tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    /* Responsive table for mobile */
+    @media (max-width: 768px) {
+      .table-scroll table,
+      .table-scroll thead,
+      .table-scroll tbody,
+      .table-scroll th,
+      .table-scroll td,
+      .table-scroll tr {
+        display: block;
+      }
+
+      .table-scroll thead {
+        display: none;
+      }
+
+      .table-scroll tr {
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+      }
+
+      .table-scroll td {
+        border: none;
+        padding: 8px 6px;
+        position: relative;
+        text-align: right;
+      }
+
+      .table-scroll td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        font-weight: 600;
+        color: #475569;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-container fade-in">
+      <img src="./arogya_logo.jpg" alt="Arogya Logo" class="main-logo-img">
+    </div>
+    <nav>
+      <a href="doctor.html" class="nav-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="card slide-in">
+      <h2 id="patient-name-header"><i class="fas fa-file-medical-alt"></i> Patient History: Loading...</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Doctor</th>
+              <th>Diagnosis</th>
+              <th>NAMASTE Code</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // --- MOCK DATA ---
+  function mockFetchPatientHistory(patientName) {
+    const historyData = {
+      "Ram Singh": [
+        { date: "2025-01-20", doctor: "Dr. A. Sharma", diagnosis: "Jwara (Fever)", NAMASTE_CODE: "AYU001" },
+        { date: "2024-11-05", doctor: "Dr. V. Prasad", diagnosis: "Aamajirna (Indigestion)", NAMASTE_CODE: "AYU002" },
+        { date: "2024-07-12", doctor: "Dr. P. Khan", diagnosis: "Kasa (Cough)", NAMASTE_CODE: "AYU005" },
+        { date: "2024-03-28", doctor: "Dr. S. Das", diagnosis: "Shiroshoola (Headache)", NAMASTE_CODE: "AYU007" },
+        { date: "2023-12-10", doctor: "Dr. A. Sharma", diagnosis: "Skin Rash (Vicharchika)", NAMASTE_CODE: "AYU015" },
+        { date: "2023-08-15", doctor: "Dr. P. Khan", diagnosis: "Initial Consultation", NAMASTE_CODE: "NAM-000" }
+      ],
+      "Rajesh Kumar": [
+        { date: "2024-09-01", doctor: "Dr. A. Sharma", diagnosis: "Viral Fever", NAMASTE_CODE: "NAM-010" },
+        { date: "2024-10-10", doctor: "Dr. P. Khan", diagnosis: "Initial Consultation", NAMASTE_CODE: "NAM-000" }
+      ],
+      "Priya Singh": [
+        { date: "2024-05-15", doctor: "Dr. S. Das", diagnosis: "Migraine Attack", NAMASTE_CODE: "NAM-004" }
+      ]
+    };
+
+    return new Promise(resolve => setTimeout(() => {
+      resolve({
+        name: patientName,
+        record: historyData[patientName] || [] // ✅ No fallback to Ram Singh
+      });
+    }, 500));
+  }
+
+  // --- DOM Elements ---
+  const patientNameHeader = document.getElementById('patient-name-header');
+  const historyTableBody = document.getElementById('history-table-body');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientName = urlParams.get('patient') || 'Ram Singh';
+
+    if (patientName) {
+      patientNameHeader.innerHTML = `<i class="fas fa-file-medical-alt"></i> Patient History: ${decodeURIComponent(patientName)}`;
+      fetchAndRenderHistory(decodeURIComponent(patientName));
+    } else {
+      patientNameHeader.innerHTML = `<i class="fas fa-file-medical-alt"></i> Patient History: Error (No Patient Selected)`;
+      historyTableBody.innerHTML = `<tr><td colspan="4" style="color: red; text-align: center;">No patient name provided.</td></tr>`;
+    }
+  });
+
+  async function fetchAndRenderHistory(patientName) {
+    historyTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #2563eb; font-style: italic;">Fetching record...</td></tr>`;
+    
+    const data = await mockFetchPatientHistory(patientName);
+
+    historyTableBody.innerHTML = '';
+
+    if (data.record.length > 0) {
+      data.record.forEach(record => {
+        const row = document.createElement('tr');
+        const displayCode = record.NAMASTE_CODE || 'N/A';
+        
+        row.innerHTML = `
+          <td data-label="Date">${record.date}</td>
+          <td data-label="Doctor">${record.doctor}</td>
+          <td data-label="Diagnosis">${record.diagnosis}</td>
+          <td data-label="NAMASTE Code"><strong>${displayCode}</strong></td>
+        `;
+        historyTableBody.appendChild(row);
+      });
+    } else {
+      historyTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b;">No medical history found for this patient.</td></tr>`;
+    }
+  }
+</script>
+</body>
+</html>

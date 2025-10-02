@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arogya Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container fade-in">
+                <img src="arogya_logo.jpg" alt="Arogya Portal Logo" class="main-logo">
+            </div>
+            <nav class="fade-in">
+                <a href="#" class="active">Home</a>
+                <a href="#emergency">Emergency</a>
+                <a href="#features">Features</a>
+                <a href="#login-boxes">Login</a>
+                <a href="#contact" class="nav-btn">Contact Us</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- HERO -->
+            <section class="card fade-in hero-section highlight-section">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">Your Health, Simplified.</h1>
+                        <p class="hero-subtitle">A seamless Electronic Health Record portal for patients, doctors and staff. Built on the principles of traditional medicine.</p>
+                        <div class="action-links">
+                            <a href="#login-boxes" class="primary-action">Access Your Portal Now</a>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <i class="fas fa-notes-medical fa-8x" style="color:#2563eb;"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LOGIN BOXES -->
+            <section class="card slide-in" id="login-boxes">
+                <h2>Access Portal</h2>
+                <div class="action-grid-4">
+                    <a href="patient.html" class="login-box">
+                        <i class="fas fa-user-injured fa-3x"></i>
+                        <h3>Patient Login/Register</h3>
+                        <p>Access your history & book appointments.</p>
+                    </a>
+                    <a href="doctor.html" class="login-box">
+                        <i class="fas fa-user-md fa-3x"></i>
+                        <h3>Doctor Login</h3>
+                        <p>View appointments & approve diagnosis.</p>
+                    </a>
+                    <a href="staff.html" class="login-box">
+                        <i class="fas fa-user-tag fa-3x"></i>
+                        <h3>Staff Login</h3>
+                        <p>Manage appointments & patient records.</p>
+                    </a>
+                    <a href="#emergency" class="login-box emergency-box">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        <h3>Immediate Help</h3>
+                        <p>Register an emergency for critical care.</p>
+                    </a>
+                </div>
+            </section>
+            
+            <!-- FEATURES -->
+            <section class="card slide-in highlight-section" id="features">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h4>Traditional Code Integration</h4>
+                        <p>Uses standardized NAMASTE dual codes for accurate diagnosis and record-keeping.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-link"></i>
+                        <h4>Real-time Staff-Doctor Workflow</h4>
+                        <p>Instantaneous appointment visibility for doctors after staff registration.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-user-shield"></i>
+                        <h4>Secure Patient History</h4>
+                        <p>Patients and doctors can access codified health records anytime, anywhere.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h4>Daily Doctor Tracking</h4>
+                        <p>Daily tracking of doctor availability within specific geographical zones.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="card slide-in login-cta-section">
+                <h2>Ready to Manage Your Health?</h2>
+                <p>Securely access your complete Electronic Health Record, book appointments, or view your diagnosis.</p>
+                <div class="action-links">
+                    <a href="patient.html" class="primary-action">Patient Login / Register</a>
+                </div>
+            </section>
+
+            <!-- EMERGENCY -->
+            <section class="card slide-in" id="emergency">
+                <h2>Emergency Registration</h2>
+                <form id="emergency-form">
+                    <label>Patient Full Name <input type="text" id="emergency-name" placeholder="Required" required></label>
+                    <label>Zone <input type="text" id="emergency-zone" placeholder="e.g., North, South" required></label>
+                    <label>Area Name <input type="text" id="emergency-area" placeholder="e.g., Sector 5"></label>
+                    <label>Reason for Emergency <textarea id="emergency-reason" rows="3" required></textarea></label>
+                    <button type="submit">Register Emergency</button>
+                </form>
+
+                <div id="doctor-availability" style="display: none; margin-top: 20px;">
+                    <h3>Available Doctors in Your Zone:</h3>
+                    <ul id="available-doctors-list"></ul>
+                    <p class="muted" id="emergency-message"></p>
+                </div>
+            </section>
+            
+            <!-- ABOUT -->
+            <section class="card slide-in highlight-section" id="about">
+                <h2>About Us</h2>
+                <p class="muted">Our mission is Ayurved First.</p>
+                <p>We are a dedicated team committed to providing holistic healing by integrating the power of traditional medicine with a modern, secure and intuitive platform. We believe in the pure use of natural resources and traditional practices to empower both patients and healthcare providers.</p>
+            </section>
+
+            <!-- CONTACT -->
+            <section class="card slide-in highlight-section" id="contact">
+                <h2>Contact Us</h2>
+                <form>
+                    <label for="name">Name <input type="text" id="name" placeholder="Enter your name"></label>
+                    <label for="email">Email <input type="email" id="email" placeholder="Enter your gmail account"></label>
+                    <label for="message">Message <textarea id="message" rows="4" placeholder="Your message..."></textarea></label>
+                    <button type="submit">Send Message</button>
+                </form>
+            </section>
+            
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Arogya Portal. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Emergency form simulation
+        const emergencyForm = document.getElementById('emergency-form');
+        const doctorAvailabilityDiv = document.getElementById('doctor-availability');
+        const doctorsList = document.getElementById('available-doctors-list');
+        const emergencyMessage = document.getElementById('emergency-message');
+        let currentEmergencyId = null;
+
+        emergencyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentEmergencyId = Date.now();
+            emergencyForm.style.display = 'none';
+            emergencyMessage.textContent = 'Emergency registered successfully.';
+            
+            const availableDoctors = [
+                { name: 'Srinivasan', availability: 'Available' }, 
+                { name: 'Priya', availability: 'Available' }
+            ];
+
+            doctorsList.innerHTML = '';
+            if (availableDoctors.length > 0) {
+                availableDoctors.forEach(doctor => {
+                    const li = document.createElement('li');
+                    const button = document.createElement('button');
+                    button.className = 'primary-action small-btn'; 
+                    button.textContent = `Notify Dr. ${doctor.name} (${doctor.availability})`;
+                    button.onclick = () => alert(`Notifying Dr. ${doctor.name}...`);
+                    li.appendChild(button);
+                    doctorsList.appendChild(li);
+                });
+                doctorAvailabilityDiv.style.display = 'block';
+            } else {
+                emergencyMessage.textContent += " No doctor found in your zone. Please call emergency services.";
+                doctorAvailabilityDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arogya - Doctor</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        /* Essential styles for the modal to work */
+        #diagnosis-modal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 1000; display: none;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            width: 90%; max-width: 600px; padding: 30px;
+        }
+        .search-results {
+            max-height: 250px; overflow-y: auto; border: 1px solid #ccc;
+            margin-top: 10px; padding: 5px;
+        }
+        .result-item {
+            padding: 8px; border-bottom: 1px dashed #eee; cursor: pointer;
+        }
+        .emergency-item { /* Added style for emergency items */
+            border: 1px solid #f87171; padding: 15px; margin-bottom: 15px; border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="light">
+
+<div class="container">
+    <header>
+        <div class="logo-container fade-in">
+            <img src="arogya_logo.jpg" alt="Arogya Portal Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="patient.html">Patient</a>
+            <a href="doctor.html" class="active">Doctor</a>
+            <a href="staff.html">Staff</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card slide-in" id="doctor-login">
+            <h2>Doctor Login</h2>
+            <form id="login-form">
+                <label>Govt ID <input type="text" placeholder="Enter Doctor ID" required></label>
+                <label>Password <input type="password" placeholder="••••••••" required></label>
+                <button type="submit">Login</button>
+            </form>
+        </section>
+
+        <section class="card slide-in" id="emergency-notifications" style="display: none;">
+            <h2>🚨 Emergency Notifications</h2>
+            <p class="muted" id="no-emergency-message">No emergency notifications.</p>
+            <div id="emergency-list"></div>
+            <button class="small-btn" onclick="fetchEmergencyRequests()">Refresh</button>
+        </section>
+
+        <section class="card slide-in" id="doctor-dashboard" style="display: none;">
+            <h2>Pending Appointments</h2>
+            <p class="muted" id="no-appointments-message">No pending appointments.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Age/Gender</th>
+                        <th>Contact</th>
+                        <th>Date/Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="appointments-table-body"></tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+<div id="diagnosis-modal-container">
+    <div class="card modal-content">
+        <h3>Approve Diagnosis for <span id="modal-patient-name"></span></h3>
+        <form id="diagnosis-form">
+            <label>Search NAMASTE Code/Term 
+                <input type="text" id="diagnosis-search-input" placeholder="e.g., Jwara, AYA0001" onkeyup="searchDiagnosisCodes()">
+            </label>
+
+            <input type="hidden" id="selected-patient-name">
+            <input type="hidden" id="selected-namaste-code">
+            
+            <div id="diagnosis-results" class="search-results">
+                <p class="muted">Start typing to search for a NAMASTE code.</p>
+            </div>
+
+            <div id="selected-diagnosis-info" style="margin-top: 20px; padding: 10px; border: 1px dashed #2563eb; display: none;">
+                <strong>Selected Term:</strong> <span id="display-diagnosis-term"></span><br>
+                <strong>NAMASTE Code:</strong> <span id="display-namaste-code"></span><br>
+                <p class="muted" id="display-definition"></p>
+            </div>
+
+            <button type="submit" id="approve-diagnosis-btn" style="margin-top: 20px;" disabled>Approve & Record</button>
+            <button type="button" onclick="closeDiagnosisModal()" class="small-btn" style="background: #ef4444;">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // DOM Elements
+    const elements = {
+        loginSection: document.getElementById('doctor-login'),
+        dashboardSection: document.getElementById('doctor-dashboard'),
+        emergencySection: document.getElementById('emergency-notifications'),
+        appointmentsBody: document.getElementById('appointments-table-body'),
+        noAppointments: document.getElementById('no-appointments-message'),
+        emergencyList: document.getElementById('emergency-list'),
+        noEmergency: document.getElementById('no-emergency-message'),
+        modalContainer: document.getElementById('diagnosis-modal-container'),
+        modalPatientName: document.getElementById('modal-patient-name'),
+        searchInput: document.getElementById('diagnosis-search-input'),
+        diagnosisResults: document.getElementById('diagnosis-results'),
+        patientNameInput: document.getElementById('selected-patient-name'),
+        namasteCodeInput: document.getElementById('selected-namaste-code'),
+        diagnosisInfo: document.getElementById('selected-diagnosis-info'),
+        displayTerm: document.getElementById('display-diagnosis-term'),
+        displayCode: document.getElementById('display-namaste-code'),
+        displayDefinition: document.getElementById('display-definition'),
+        approveBtn: document.getElementById('approve-diagnosis-btn')
+    };
+    
+    // Mock Data for Appointments
+    const MOCK_APPOINTMENTS = [
+        { id: 1, patient: 'Ram Singh', date: '2025-10-01', reason: 'Follow up for Jwara', doctor: 'Dr. Sharma', age: 45, gender: 'M', contact: '98765-XXXXX' },
+        { id: 2, patient: 'Priya Verma', date: '2025-10-02', reason: 'New skin rash', doctor: 'Dr. Sharma', age: 28, gender: 'F', contact: '99887-XXXXX' }
+    ];
+
+    // Mock Data for Emergency
+    let MOCK_EMERGENCIES = [
+        { id: 101, patient: 'Sham Sharma', zone: 'North', area: 'Sector 5', timestamp: '10:30 AM', reason: 'Sudden high fever.', status: 'Awaiting Response', isAttended: false }
+    ];
+
+    // --- Login and Dashboard Visibility ---
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        elements.loginSection.style.display = 'none';
+        elements.dashboardSection.style.display = 'block';
+        elements.emergencySection.style.display = 'block';
+        fetchAppointments();
+        fetchEmergencyRequests();
+    });
+    
+    // --- Appointment Data Display ---
+    const fetchAppointments = async () => {
+        // Mock logic using MOCK_APPOINTMENTS
+        const appointments = MOCK_APPOINTMENTS;
+            
+        elements.appointmentsBody.innerHTML = '';
+        if (appointments.length > 0) {
+            elements.noAppointments.style.display = 'none';
+            appointments.forEach(app => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${app.patient}</td>
+                    <td>${app.age}/${app.gender}</td>
+                    <td>${app.contact}</td>
+                    <td>${app.date}<br><small class="muted">${app.reason}</small></td>
+                    <td>
+                        <button class="small-btn approve-btn" data-patient="${app.patient}">Approve</button>
+                        <button class="small-btn history-btn" data-patient="${app.patient}">History</button>
+                    </td>`;
+                elements.appointmentsBody.appendChild(row);
+            });
+        } else {
+            elements.noAppointments.style.display = 'block';
+        }
+    };
+
+    // --- Functional Emergency Portal ---
+    const fetchEmergencyRequests = () => {
+        const requests = MOCK_EMERGENCIES.filter(req => !req.isAttended);
+            
+        elements.emergencyList.innerHTML = '';
+        if (requests.length > 0) {
+            elements.noEmergency.style.display = 'none';
+            requests.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'emergency-item';
+                div.innerHTML = `
+                    <strong>Patient:</strong> ${req.patient} (Zone: ${req.zone}, Area: ${req.area})<br>
+                    <strong>Time:</strong> ${req.timestamp}<br>
+                    <strong>Reason:</strong> ${req.reason}<br>
+                    <strong>Status:</strong> <span style="color:red;">${req.status}</span>
+                    <div style="margin-top: 10px;">
+                        <button class="small-btn" onclick="attendEmergency(${req.id}, '${req.patient}')">Respond</button>
+                    </div>
+                `;
+                elements.emergencyList.appendChild(div);
+            });
+        } else {
+            elements.noEmergency.style.display = 'block';
+        }
+    };
+
+    function attendEmergency(id, patientName) {
+        // Simulate updating the status on the server
+        const requestIndex = MOCK_EMERGENCIES.findIndex(req => req.id === id);
+        if (requestIndex !== -1) {
+            MOCK_EMERGENCIES[requestIndex].status = 'Doctor Attending';
+            MOCK_EMERGENCIES[requestIndex].isAttended = true;
+
+            alert(`Emergency for ${patientName} acknowledged. Status updated to 'Doctor Attending'.`);
+            fetchEmergencyRequests(); // Refresh the list
+        }
+    }
+
+
+    // --- Diagnosis Modal Functions (Unchanged) ---
+    function openDiagnosisModal(patientName) {
+        elements.modalPatientName.textContent = patientName;
+        elements.patientNameInput.value = patientName;
+        // Reset modal state
+        elements.searchInput.value = '';
+        elements.diagnosisResults.innerHTML = '<p class="muted">Start typing to search for a NAMASTE code.</p>';
+        elements.diagnosisInfo.style.display = 'none';
+        elements.approveBtn.disabled = true;
+        elements.modalContainer.style.display = 'flex';
+        searchDiagnosisCodes('');
+    }
+
+    function closeDiagnosisModal() {
+        elements.modalContainer.style.display = 'none';
+    }
+    
+    let searchTimeout;
+    async function searchDiagnosisCodes(initialTerm) {
+        clearTimeout(searchTimeout);
+        const searchTerm = initialTerm !== undefined ? initialTerm : elements.searchInput.value;
+        
+        searchTimeout = setTimeout(async () => {
+            elements.diagnosisResults.innerHTML = '<p class="muted">Searching...</p>';
+
+            // Mock diagnosis lookup data for demo
+            const mockResults = [
+                { display: 'Jwara (Fever)', namasteCode: 'AYU001', definition: 'Increased body temperature, often due to altered Vata/Pitta' },
+                { display: 'Aamajirna (Indigestion)', namasteCode: 'AYU002', definition: 'Improper digestion leading to formation of toxic remnants (Ama)' },
+                { display: 'Sotha (Edema)', namasteCode: 'AYU003', definition: 'Swelling due to fluid accumulation' }
+            ].filter(item => item.display.toLowerCase().includes(searchTerm.toLowerCase()) || item.namasteCode.includes(searchTerm));
+
+            elements.diagnosisResults.innerHTML = '';
+            if (mockResults.length) {
+                mockResults.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `<strong>${item.display}</strong> <span class="muted" style="float: right;">(${item.namasteCode})</span>
+                                    <p style="margin: 0; font-size: 0.85rem;">${item.definition}</p>`;
+                    div.onclick = () => selectDiagnosis(item);
+                    elements.diagnosisResults.appendChild(div);
+                });
+            } else {
+                elements.diagnosisResults.innerHTML = '<p class="muted">No NAMASTE codes found. Try a different term or code.</p>';
+            }
+        }, initialTerm !== undefined ? 0 : 300);
+    }
+
+    function selectDiagnosis(item) {
+        elements.namasteCodeInput.value = item.namasteCode;
+        
+        elements.displayTerm.textContent = item.display;
+        elements.displayCode.textContent = item.namasteCode;
+        elements.displayDefinition.textContent = `Definition: ${item.definition}`;
+        
+        elements.diagnosisInfo.style.display = 'block';
+        elements.approveBtn.disabled = false;
+    }
+    
+    async function approveDiagnosis(patientName, namasteCode) {
+        // Mock server approval
+        alert(`Approval successful (Mock)! Patient: ${patientName}, Diagnosis Code: ${namasteCode}.`);
+        closeDiagnosisModal();
+        fetchAppointments();
+    }
+
+    // --- Event Listeners ---
+    elements.appointmentsBody.addEventListener("click", function (event) {
+        const row = event.target.closest("tr");
+        if (!row) return;
+
+        const patientName = event.target.getAttribute('data-patient');
+
+        if (event.target.classList.contains("approve-btn")) {
+            openDiagnosisModal(patientName);
+        }
+        
+        if (event.target.classList.contains("history-btn")) {
+            // Redirect to patient history page with query parameter
+            window.location.href = `patient_history.html?patient=${patientName}`;
+        }
+    });
+    
+    document.getElementById('diagnosis-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const patientName = elements.patientNameInput.value;
+        const namasteCode = elements.namasteCodeInput.value;
+        
+        if (patientName && namasteCode) {
+            approveDiagnosis(patientName, namasteCode);
+        } else {
+            alert("Please select a valid NAMASTE diagnosis code before approving.");
+        }
+    });
+</script>
+</body>
+</html>
